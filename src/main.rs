@@ -62,12 +62,14 @@ impl Selector {
     pub fn move_right(&mut self) {
         self.x = self.x.saturating_add(1);
     }
+
+    
 }
 
 fn main() {
     let mut board = Board::<6, 6>::new();
     let mut selector = Selector::new();
-    
+
     board.render();
 
     println!("Hello, world!");
