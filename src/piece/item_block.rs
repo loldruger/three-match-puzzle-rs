@@ -1,16 +1,12 @@
 use std::fmt::Display;
 use rand::distributions::{Distribution, Standard};
 
-use super::Piece;
-
 #[derive(Clone, Copy)]
 pub enum ItemBlock {
     Vertical,
     Horizontal,
     Bomb,
 }
-
-impl Piece for ItemBlock {}
 
 impl Display for ItemBlock {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

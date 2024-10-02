@@ -1,18 +1,18 @@
-use crate::Block;
+use crate::{Block, Piece};
 
 pub trait Renderable {
     fn render(&self);
 }
 
 pub struct Board<const U: usize, const V: usize> {
-    blocks: [[Block; U]; V],
+    pieces: [[Piece; U]; V],
     matchables: Vec<(usize, usize)>,
 }
 
 impl<const U: usize, const V: usize> Board<U, V> {
     pub fn new() -> Self {
         Self {
-            blocks: Self::reset(),
+            pieces: Self::reset(),
             matchables: Vec::new(),
         }
     }
@@ -25,16 +25,16 @@ impl<const U: usize, const V: usize> Board<U, V> {
         println!("Hint");
     }
 
-    pub fn reset() -> [[Block; U]; V] {
-        let mut blocks = [[Block::Red; U]; V];
-
+    pub fn reset() -> [[Piece; U]; V] {
+        let mut pieces = [[Piece::Block(Block::Red); U]; V];
+ 
         for i in 0..V {
             for j in 0..U {
-                blocks[i][j] = rand::random();
+                pieces[i][j] = rand::random();
             }
         }
 
-        blocks
+        pieces
     }
 }
 
@@ -42,7 +42,7 @@ impl<const U: usize, const V: usize> Renderable for Board<U, V> {
     fn render(&self) {
         for i in 0..V {
             for j in 0..U {
-                print!("{} ", self.blocks[i][j]);
+                print!("{} ", self.pieces[i][j]);
             }
             println!();
         }

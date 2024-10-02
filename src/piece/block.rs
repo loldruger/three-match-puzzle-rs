@@ -1,9 +1,7 @@
 use std::fmt::Display;
 use rand::distributions::{Distribution, Standard};
 
-use super::Piece;
-
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub enum Block {
     Red,
     Green,
@@ -13,8 +11,6 @@ pub enum Block {
     SkyBlue,
     White
 }
-
-impl Piece for Block {}
 
 impl Display for Block {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
