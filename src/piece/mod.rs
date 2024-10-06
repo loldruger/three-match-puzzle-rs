@@ -7,23 +7,25 @@ pub use block::*;
 pub use item_block::*;
 use rand::distributions::{Distribution, Standard};
 
-#[derive(Clone, Copy)]
-pub enum Piece {
+#[derive(Clone, Copy, PartialEq)]
+pub enum BlockType {
+    Empty,
     Block(Block),
     ItemBlock(ItemBlock),
 }
 
-impl Display for Piece {
+impl Display for BlockType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Piece::Block(b) => write!(f, "{b}"),
-            Piece::ItemBlock(ib) => write!(f, "{ib}"),
+            BlockType::Empty => write!(f, "  "),
+            BlockType::Block(b) => write!(f, "{b}"),
+            BlockType::ItemBlock(ib) => write!(f, "{ib}"),
         }
     }
 }
 
-impl Distribution<Piece> for Standard {
-    fn sample<R: rand::Rng + ?Sized>(&self, rng: &mut R) -> Piece {
-        Piece::Block(rng.gen())
+impl Distribution<BlockType> for Standard {
+    fn sample<R: rand::Rng + ?Sized>(&self, rng: &mut R) -> BlockType {
+        BlockType::Block(rng.gen())
     }
 }
