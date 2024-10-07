@@ -4,7 +4,7 @@ pub trait Renderable {
     fn render(&self);
 }
 
-#[derive(Clone, Copy, Hash, Eq, PartialEq)]
+#[derive(Debug, Clone, Copy, Hash, Eq, PartialEq)]
 pub struct Position(pub usize, pub usize);
 
 pub struct Board<const U: usize, const V: usize> {
@@ -17,7 +17,7 @@ pub struct Board<const U: usize, const V: usize> {
 impl<const U: usize, const V: usize> Board<U, V> {
     pub fn new() -> Self {
         Self {
-            pieces: Self::reset(),
+            pieces: [[BlockType::Empty; U]; V],
             matchables: Vec::new(),
             matched: Vec::new(),
             selected: None,
@@ -28,27 +28,65 @@ impl<const U: usize, const V: usize> Board<U, V> {
         !self.matchables.is_empty()
     }
 
-    pub fn get_greatest_matchable(&self) -> Option<&[Position]> {
+    pub fn get_best_matchable(&self) -> Option<&[Position]> {
         self.matchables.iter().max_by_key(|x| x.len()).map(|v| &**v)
     }
 
-    pub fn reset() -> [[BlockType; U]; V] {
-        let mut pieces = [[BlockType::Block(Block::Red); U]; V];
+    pub fn reset(&mut self) {
+        let mut pieces = [[BlockType::Empty; U]; V];
  
         for i in 0..V {
             for j in 0..U {
                 pieces[i][j] = rand::random();
             }
         }
+        self.pieces = pieces;
+        self.search_matchables(&pieces);
+    }
 
-        pieces
+    fn inspect(&self, pos: Position) -> Option<BlockType> {
+        self.pieces
+            .get(pos.0)
+            .and_then(|a| a.get(pos.1))
+            .copied()
     }
 
     fn search_matchables(&mut self, pieces: &[[BlockType; U]; V]) {
-        // let mut marker = [[false; U]; V];
-
         self.matchables.clear();
         self.matched.clear();
+
+        self.render();
+        let mut iterate_chunks = |chunks: &Vec<&[Position]>| {
+            println!("chunks: {:?}", chunks);
+            for chunk in chunks {
+                if chunk.len() >= 3 {
+                    println!("chunk: {:?}", chunk);
+                    self.matched.push(chunk.to_vec());
+                    continue;
+                }
+
+                let is_item_prev_matched = chunk.first().is_some_and(|a| self.inspect(Position(a.0, a.1.wrapping_sub(2))) == self.inspect(*a));
+                let is_item_next_matched = chunk.last().is_some_and(|a| self.inspect(Position(a.0, a.1 + 2)) == self.inspect(*a));
+                let is_item_prev_down_matched = chunk.first().is_some_and(|a| self.inspect(Position(a.0.wrapping_sub(1), a.1 + 1)) == self.inspect(*a));
+                let is_item_next_down_matched = chunk.last().is_some_and(|a| self.inspect(Position(a.0 + 1, a.1 + 1)) == self.inspect(*a));
+
+                if chunk.len() == 2 {
+                    if is_item_prev_matched || is_item_next_matched {
+                        self.matchables.push(chunk.to_vec());
+                    }
+                    if is_item_prev_down_matched || is_item_next_down_matched {
+                        self.matchables.push(chunk.to_vec());
+                    }
+                    continue;
+                }
+
+                if chunk.len() == 1 {
+                    if is_item_prev_down_matched && is_item_next_down_matched {
+                        self.matchables.push(chunk.to_vec());
+                    }
+                }
+            }
+        };
 
         for i in 0..V {
             for j in 0..U {
@@ -67,42 +105,11 @@ impl<const U: usize, const V: usize> Board<U, V> {
                     }
                 }
 
-                let x_prev = pieces.get(i - 1).and_then(|a| a.get(j));
-                let x_next = pieces.get(i + 1).and_then(|a| a.get(j));
-                let y_prev = pieces.get(i).and_then(|a| a.get(j - 1));
-                let y_next = pieces.get(i).and_then(|a| a.get(j + 1));
+                let chunks_h = samples_h.split(|a| pieces[a.0][a.1] != pieces[i][j]).collect::<Vec<_>>();
+                let chunks_v = samples_v.split(|a| pieces[a.0][a.1] != pieces[i][j]).collect::<Vec<_>>();
 
-                let mut chunks_h = samples_h.chunk_by(|a, b| a.1 == b.1 + 1);
-                let mut chunks_v = samples_v.chunk_by(|a, b| a.0 == b.0 + 1);
-
-                let matched_h = chunks_h.by_ref().filter(|x| x.len() >= 3).collect::<Vec<_>>();
-                let matched_v = chunks_v.by_ref().filter(|x| x.len() >= 3).collect::<Vec<_>>();
-                
-                // [[a, a, a], [a], [a, a], [a, a, a, a], [a]]
-                // [[a], [a], [a], [a], [a]]
-                // [[a, a], [a, a], [a, a], [a, a], [a, a]]
-
-                let matchables_h = chunks_h 
-                    .filter(|x| {
-
-
-                        x.len() == 1
-                    })
-                    .collect::<Vec<_>>();
-
-                let matchables_v = chunks_v // [[a, a, a], [a], [a, a], [a, a, a, a], [a]]
-                    .filter(|y| {
-                        let y_prev = y.get(i - 1).is_some_and(|a| pieces[a.0][a.1] == pieces[i][j]);
-                        let y_next = y.get(i + 1).is_some_and(|a| pieces[a.0][a.1] == pieces[i][j]);
-
-                        y.len() == 1
-                    })
-                    .collect::<Vec<_>>();
-
-                // self.matched.extend(matched_h);
-                // self.matched.extend(matched_v);
-                // self.matchables.extend(matchables_h);
-                // self.matchables.extend(matchables_v);
+                iterate_chunks(&chunks_h);
+                iterate_chunks(&chunks_v);
             }
         }
     }
