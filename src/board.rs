@@ -76,26 +76,26 @@ impl<const U: usize, const V: usize> Board<U, V> {
                 }
 
                 let is_dir_h = chunk.first().map(|a| a.0) == chunk.last().map(|a| a.0);
+                let pair_coord = [
+                    [
+                        [(0, -2), (-1, -1), (1, -1)],
+                        [(-2, 0), (-1, -1), (-1, 1)]
+                    ],
+                    [
+                        [(0, 2), (1, 1), (-1, 1)],
+                        [(2, 0), (1, 1), (1, -1)]
+                    ]
+                ];
 
-                let item_matchable_prev = chunk.first().and_then(|item| {
-                    let (x, y) = if is_dir_h {(0, -2)} else {(-2, 0)};
-                    self.inspect(item.shift(x, y)).take_if(|a| self.inspect(*item).is_some_and(|b| *a == b))
-                });
-
-                let item_matchable_next = chunk.last().and_then(|item| {
-                    let (x, y) = if is_dir_h {(0, 2)} else {(2, 0)};
-                    self.inspect(item.shift(x, y)).take_if(|a| self.inspect(*item).is_some_and(|b| *a == b))
-                });
-
-                let item_matchable_prev_diagonal = chunk.first().and_then(|item| {
-                    let (x, y) = if is_dir_h {(1, -1)} else {(1, -1)};
-                    self.inspect(item.shift(x, y)).take_if(|a| self.inspect(*item).is_some_and(|b| *a == b))
-                });
-
-                let item_matchable_next_diagonal = chunk.last().and_then(|item| {
-                    let (x, y) = if is_dir_h {(1, 1)} else {(1, -1)};
-                    self.inspect(item.shift(x, y)).take_if(|a| self.inspect(*item).is_some_and(|b| *a == b))
-                });
+                let item_matchable = [chunk.first(), chunk.last()].iter().enumerate().filter_map(|(idx, item)| {
+                    item.and_then(|item| {
+                        pair_coord[is_dir_h.into() as usize][idx]
+                            .iter()
+                            .map(|(x, y)| self.inspect(item.shift(*x, *y)).take_if(|a| self.inspect(*item).is_some_and(|b| *a == b)))
+                            .collect::<Vec<_>>()
+                            .into()
+                    })
+                }).collect::<Vec<_>>();
 
                 if chunk.len() == 2 {
                     if is_item_prev_matched || is_item_next_matched {
