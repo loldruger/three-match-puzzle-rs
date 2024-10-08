@@ -6,13 +6,13 @@ use board::*;
 
 fn main() {
     let mut board = Board::<6, 6>::new();
+    board.reset();
 
-    loop {
-        if !board.is_playable() {
-            board.reset();
-        }
-        let best_matchable = board.get_best_matchable();
+    board.is_playable();
+    // loop {
         
-        board.render();
-    }
+    //     board.render();
+
+    // }
+
 }
