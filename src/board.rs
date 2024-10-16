@@ -18,7 +18,11 @@ impl<const U: usize, const V: usize> Board<U, V> {
     }
 
     pub fn is_playable(&self) -> bool {
-        !self.cells.get_blocks_matchable().is_empty()
+        !self.cells.get_coords_matchable().is_empty()
+    }
+
+    pub fn restart(&mut self) {
+        self.cells = BlockCell::new();
     }
 }
 
