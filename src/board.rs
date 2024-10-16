@@ -5,7 +5,7 @@ pub trait Renderable {
 }
 
 pub struct Board<const U: usize, const V: usize> {
-    cells: BlockCell<U, V>,
+    pub cells: BlockCell<U, V>,
     selected: Option<Position>,
 }
 
@@ -18,7 +18,7 @@ impl<const U: usize, const V: usize> Board<U, V> {
     }
 
     pub fn is_playable(&self) -> bool {
-        !self.cells.get_matchables().is_empty()
+        !self.cells.get_blocks_matchable().is_empty()
     }
 }
 

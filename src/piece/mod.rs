@@ -3,9 +3,10 @@ mod item_block;
 
 use std::fmt::Display;
 
+use rand::distributions::{Distribution, Standard};
+
 pub use block::*;
 pub use item_block::*;
-use rand::distributions::{Distribution, Standard};
 
 pub enum Direction {
     Up,
@@ -42,16 +43,16 @@ impl Position {
 
 pub struct BlockCell<const U: usize, const V: usize> {
     data: [[BlockType; U]; V],
-    matchables: Vec<Vec<Position>>,
-    matched: Vec<Vec<Position>>,
+    blocks_matchable: Vec<Vec<Position>>,
+    blocks_matched: Vec<Vec<Position>>,
 }
 
 impl<const U: usize, const V: usize> BlockCell<U, V> {
     pub fn new() -> Self {
         Self {
             data: Self::reset(),
-            matchables: Vec::new(),
-            matched: Vec::new(),
+            blocks_matchable: Vec::new(),
+            blocks_matched: Vec::new(),
         }
     }
 
@@ -59,12 +60,12 @@ impl<const U: usize, const V: usize> BlockCell<U, V> {
         self.data.get(pos.x).and_then(|a| a.get(pos.y)).copied()
     }
 
-    pub fn get_matchables(&self) -> &Vec<Vec<Position>> {
-        &self.matchables
+    pub fn get_blocks_matchable(&self) -> &Vec<Vec<Position>> {
+        &self.blocks_matchable
     }
 
-    pub fn get_matched(&self) -> &Vec<Vec<Position>> {
-        &self.matched
+    pub fn get_blocks_matched(&self) -> &Vec<Vec<Position>> {
+        &self.blocks_matched
     }
 
     pub fn reset() -> [[BlockType; U]; V] {
@@ -79,12 +80,12 @@ impl<const U: usize, const V: usize> BlockCell<U, V> {
         pieces
     }
 
-    pub fn reset_matchables(&mut self) {
-        self.matchables.clear();
+    pub fn reset_blocks_matchable(&mut self) {
+        self.blocks_matchable.clear();
     }
 
-    pub fn reset_matched(&mut self) {
-        self.matched.clear();
+    pub fn reset_blocks_matched(&mut self) {
+        self.blocks_matched.clear();
     }
 
     pub fn swap(&mut self, pos: Position, direction: Direction) -> Result<(), ()> {
@@ -107,11 +108,11 @@ impl<const U: usize, const V: usize> BlockCell<U, V> {
     }
 
     pub fn get_hint_data(&self) -> Option<&Vec<Position>> {
-        self.matchables.iter().max_by_key(|x| x.len())
+        self.blocks_matchable.iter().max_by_key(|x| x.len())
     }
 
-    fn search_matchables(&mut self) {
-        self.matchables.clear();
+    pub fn search_blocks_matchable(&mut self) {
+        self.blocks_matchable.clear();
 
         for i in 0..U*V {
             // let index 
