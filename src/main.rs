@@ -6,9 +6,9 @@ use board::*;
 
 fn main() {
     let mut board = Board::<6, 6>::new();
-    board.reset();
 
     board.is_playable();
+    board.render();
     // loop {
         
     //     board.render();

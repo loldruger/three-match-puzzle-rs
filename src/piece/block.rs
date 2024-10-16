@@ -1,7 +1,7 @@
 use std::fmt::Display;
 use rand::distributions::{Distribution, Standard};
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Block {
     Red,
     Green,
